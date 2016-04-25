@@ -7,7 +7,7 @@
 #define STDOUT 1        //following the standard nomenclature for xv6 output
 
 int main(){
-    int pid = fork();
+    int pid = fork(0);
     if(pid > 0){
         printf(STDOUT,"parent: child=%d\n", pid);
         pid = wait();

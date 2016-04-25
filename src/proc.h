@@ -2,9 +2,9 @@
 #define NSEGS     7
 
 //defines to use in Lottery Scheduling
-#define MAX_TICKS 32            //max number of tickets per process
-#define MIN_TICKS 1             //min number of ticket per process
-#define DEFAULT_TICKS 8         //default number of tickets for process
+#define MAX_TICKETS 32            //max number of tickets per process
+#define MIN_TICKETS 1             //min number of ticket per process
+#define DEFAULT_TICKETS 8         //default number of tickets for process
 
 
 // Per-CPU state

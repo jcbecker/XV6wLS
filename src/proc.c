@@ -126,7 +126,7 @@ growproc(int n)
 // Sets up stack to return as if from system call.
 // Caller must set state of returned proc to RUNNABLE.
 int
-fork(void)
+fork(int tickets)
 {
   int i, pid;
   struct proc *np;
@@ -145,7 +145,16 @@ fork(void)
   np->sz = proc->sz;
   np->parent = proc;
   *np->tf = *proc->tf;
-
+  
+  if(!tickets)                          //if tickets equals zero then  use a default number of tickets
+    np->tickets=DEFAULT_TICKETS;
+  else if (tickets<0)                   //put the value of tickets between the range MAX and MIN
+    np->tickets=MIN_TICKETS;
+  else if (tickets>MAX_TICKETS)
+    np->tickets=MAX_TICKETS;
+  else
+    np->tickets=tickets;
+  
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
 
@@ -161,6 +170,7 @@ fork(void)
   // lock to force the compiler to emit the np->state write last.
   acquire(&ptable.lock);
   np->state = RUNNABLE;
+  //WARNING: if use a variable to control tickets for all process, maybe need add here
   release(&ptable.lock);
   
   return pid;
