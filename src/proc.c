@@ -265,6 +265,28 @@ wait(void)
   }
 }
 
+
+int randstate=1;
+int random(){
+  randstate = randstate * 1664525 + 1013904223;
+  if(randstate<0){
+    return (randstate*-1);
+  }
+  return randstate;
+}
+
+int ticketcount(){
+    int count=0;
+    struct proc *p;
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+        if(p->state == RUNNABLE){                                               //Danger: need critical region
+            count+=p->tickets;
+        }
+    }
+    return count;
+}
+
+
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -277,6 +299,7 @@ void
 scheduler(void)
 {
   struct proc *p;
+  int distributed, raffled;
 
   for(;;){
     // Enable interrupts on this processor.
@@ -284,22 +307,33 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
-        continue;
+    
+    distributed=ticketcount();
+    if (distributed>0){
+        raffled=random()%distributed;                                           //raffled is the number of raffled ticket
+        for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+            if(p->state == RUNNABLE){                                           //for each runnable process discount tickets, to have a negative value
+                raffled-=p->tickets;
+                if (raffled<0){
+                    break;
+                }
+            }
+        }
+        if(p->state == RUNNABLE){
+            // Switch to chosen process.  It is the process's job
+            // to release ptable.lock and then reacquire it
+            // before jumping back to us.
+            proc = p;
+            switchuvm(p);
+            p->state = RUNNING;
+            swtch(&cpu->scheduler, proc->context);
+            switchkvm();
 
-      // Switch to chosen process.  It is the process's job
-      // to release ptable.lock and then reacquire it
-      // before jumping back to us.
-      proc = p;
-      switchuvm(p);
-      p->state = RUNNING;
-      swtch(&cpu->scheduler, proc->context);
-      switchkvm();
-
-      // Process is done running for now.
-      // It should have changed its p->state before coming back.
-      proc = 0;
+            // Process is done running for now.
+            // It should have changed its p->state before coming back.
+            proc = 0;
+            
+        }
     }
     release(&ptable.lock);
 
