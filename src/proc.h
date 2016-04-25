@@ -1,6 +1,12 @@
 // Segments in proc->gdt.
 #define NSEGS     7
 
+//defines to use in Lottery Scheduling
+#define MAX_TICKS 32            //max number of tickets per process
+#define MIN_TICKS 1             //min number of ticket per process
+#define DEFAULT_TICKS 8         //default number of tickets for process
+
+
 // Per-CPU state
 struct cpu {
   uchar id;                    // Local APIC ID; index into cpus[] below
@@ -65,6 +71,7 @@ struct proc {
   int killed;                  // If non-zero, have been killed
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
+  int tickets;                  //number of ticket for each process
   char name[16];               // Process name (debugging)
 };
 
