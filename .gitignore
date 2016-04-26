@@ -5,6 +5,9 @@ _*
 *.asm
 *.sym
 *.img
+*.pdf
+report/report.aux
+report/report.log
 vectors.S
 bootblock
 entryother
